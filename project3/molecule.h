@@ -8,6 +8,7 @@
 #include <cmath>
 #include <fstream>
 #include <iostream>
+#include <iomanip>
 #include <string>
 #include <vector>
 #include "utils.h"
@@ -24,9 +25,15 @@ namespace base_mol {
         vector<int> atomic_numbers;
         Eigen::MatrixXd coords;
         int n_atoms = 0;
+        int n_elecs = 0;
 
         explicit Molecule(string xyz_filename) {                         // Constructor
             extract_from_xyz_file(xyz_filename);
+
+            // Set the number of electrons as the number of protons, assuming neutral
+            for (auto z : atomic_numbers){
+                n_elecs += z;
+            }
         }
 
         void extract_from_xyz_file(string &xyz_filename) {
