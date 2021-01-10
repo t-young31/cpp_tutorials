@@ -99,25 +99,25 @@ public:
     vector<double> harmonic_freqs(){
         /*****************************************************
          * Compute the harmonic normal modes by diagonalising
-         * the mass weighted Hessian matrix
+         * the mass weighted Hessian matrix. Only the
+         * rotational and vibrational modes are returned
          ****************************************************/
         vector<double> freqs;
 
         Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> solver(hessian);
         Eigen::VectorXd lambda = solver.eigenvalues().real();
-        cout << lambda.transpose() << endl;
 
-        double amu_to_kg =  1.66053906660e-27;                           // amu m_e^-1
+        double amu_to_kg = 1.66053906660e-27;                            // kg Da^-1
         double eh_to_j = 4.3597447222071e-18;                            // J E_h^-1
         double a0_to_m = 5.291772109E-11;                                // m a_0^-1
         double c_cm = 2.998e10;                                          // cm s^-1
+        double two_pi = 2.0 * 3.14159265359;                             // 2π
 
-        double conversion = 1.0 / c_cm;
+        double conversion = sqrt(eh_to_j / amu_to_kg) / (two_pi * c_cm * a0_to_m);
 
-        // Miss the fist 3 translational modes
+        // Miss the fist 3 translational modes, which are zero
         for (int i=2; i<lambda.size(); i++){
-            freqs.push_back(conversion * sqrt(lambda[i] * amu_to_kg * eh_to_j / a0_to_m));
-            cout << conversion * sqrt(lambda[i] * eh_to_j / (a0_to_m*a0_to_m*amu_to_kg)) << endl;
+            freqs.push_back(conversion * sqrt(lambda[i]));
         }
         return freqs;
     }
@@ -130,7 +130,10 @@ int main(){
 
     Molecule mol = Molecule("/home/tom/repos/cpp_tutorial/project2/h2o.xyz",
                             "/home/tom/repos/cpp_tutorial/project2/h2o_hessian.txt");
-    mol.harmonic_freqs();
+
+    for (auto &freq : mol.harmonic_freqs()){
+        cout << freq  << " cm^-1" << endl;
+    }
 
     return 0;
 }
